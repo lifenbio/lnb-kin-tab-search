@@ -1,0 +1,21 @@
+## Python 3.9 기준
+
+Django==4.1.2
+django-ninja==0.20.0
+django-storages==1.13.2
+django-cors-headers==4.2.0
+psycopg2==2.9.4
+boto3==1.28.35
+requests==2.31.0
+uvicorn==0.23.2
+channels==4.0.0
+channels-redis==4.1.0
+PyJWT==2.8.0
+beautifulsoup4
+pandas
+openpyxl
+django-crontab
+celery
+django-celery-beat
+django-celery-results
+flower
