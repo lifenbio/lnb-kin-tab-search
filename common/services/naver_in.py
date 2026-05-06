@@ -34,7 +34,6 @@ from common.package.mail import send
 from common.package.naver_search import get_search_data
 from common.package.naver_view import get_view_data
 from common.package.rank import get_kin_rank
-from common.package.sms import send_sms
 from common.package.storage import s3_client
 
 
@@ -58,12 +57,6 @@ DETAIL_VIEW_RECIPIENTS = _split_emails(os.environ.get(
     'DETAIL_VIEW_RECIPIENTS',
     'sh.hwang@lifenbio.com,jhyjhy@lifenbio.com,khbin@lifenbio.com,min4397@naver.com',
 ))
-
-# 상세 수집 완료 SMS 수신 번호.
-DETAIL_VIEW_SMS_RECIPIENT = os.environ.get(
-    'DETAIL_VIEW_SMS_RECIPIENT',
-    '01088876675',
-)
 
 
 class CrawlFailure(Exception):
@@ -533,7 +526,5 @@ def collect_detail_view(*, limit=None):
         cc=[],
         files=file_list_test
     )
-
-    send_sms(DETAIL_VIEW_SMS_RECIPIENT, "지식인 상세 완료")
 
     return "Complete"

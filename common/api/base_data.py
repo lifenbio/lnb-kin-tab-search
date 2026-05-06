@@ -21,7 +21,6 @@ from common.models import (
     StandardInformationURL,
 )
 from common.package.naver_search import get_search_data
-from common.package.sms import send_sms
 from common.services import naver_in
 
 
@@ -129,7 +128,7 @@ def trigger_collect_daily_kin(request, limit: int = 5):
 def trigger_collect_detail_view(request, limit: int = 5):
     """``collect_detail_view`` 동기 실행, 처음 ``limit`` 개 row 만.
 
-    cron 21시 task 의 부분 실행. 메일·SMS 부수효과 발생 (수신자는 env 로 조절).
+    cron 21시 task 의 부분 실행. 메일 부수효과 발생 (수신자는 env 로 조절).
     """
     return naver_in.collect_detail_view(limit=limit)
 
