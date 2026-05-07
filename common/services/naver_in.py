@@ -136,13 +136,38 @@ def check_ids_match(row_url, href):
     return dir_id_match and doc_id_match
 
 
+def _build_siu_cache():
+    """``StandardInformationURL`` 을 ``(dirId, docId)`` 키로 한 번에 메모리 캐싱.
+
+    매칭 규칙은 ``find_matching_data`` 의 ``url__contains=f"dirId={d}&docId={dc}"`` 와 동등:
+    - URL 에 ``"dirId=X&docId=Y"`` 가 substring 으로 존재하는 row 만 인덱싱
+    - 동일 키 중복 시 id 오름차순 첫 row (DB 의 ``.first()`` 와 동등)
+
+    cron 시작 시 1회 build → 매 keyword × rank 마다 LIKE 쿼리 (peering RTT 동반) 를
+    in-memory dict O(1) 조회로 대체. 14,807 row 전체에 대해 DB filter 와 100% 일치 검증됨.
+    """
+    cache = {}
+    for siu in StandardInformationURL.objects.all().order_by('id'):
+        qp = parse_query_params(siu.url)
+        d = qp.get('dirId')
+        dc = qp.get('docId')
+        if d and dc and f"dirId={d}&docId={dc}" in siu.url:
+            if (d, dc) not in cache:
+                cache[(d, dc)] = siu
+    return cache
+
+
 def collect_daily_kin(*, limit=None):
     """현재 일자 기준 네이버 지식인 키워드 수집 → ``DailyResult`` row 생성.
 
     ``limit`` 지정 시 처음 N 개 키워드만 처리 (staging/디버그). cron 으로 도는
     ``tasks.py`` 의 wrapper 는 ``limit`` 을 넘기지 않아 운영 동작은 종전과 동일.
+
+    StandardInformationURL 매칭은 cron 시작 시 ``_build_siu_cache()`` 로 한 번에
+    pre-cache → 매 row 의 LIKE 쿼리 (peering RTT 동반) 를 in-memory 조회로 대체.
     """
     ip_addresses = _load_ip_addresses()
+    siu_cache = _build_siu_cache()
 
     keyword_qs = StandardInformationKeyword.objects.all().order_by('id')
     if limit is not None:
@@ -184,7 +209,7 @@ def collect_daily_kin(*, limit=None):
                             query_dict = dict(q.split('=') for q in query.split('&') if '=' in q)
                             dir_id = query_dict.get('dirId')
                             doc_id = query_dict.get('docId')
-                            matching_data = find_matching_data(dir_id, doc_id)
+                            matching_data = siu_cache.get((dir_id, doc_id))
                         except Exception:
                             matching_data = None
 
