@@ -167,13 +167,14 @@ def collect_daily_kin(*, limit=None):
     pre-cache → 매 row 의 LIKE 쿼리 (peering RTT 동반) 를 in-memory 조회로 대체.
     """
     ip_addresses = _load_ip_addresses()
-    siu_cache = _build_siu_cache()
-
-    keyword_qs = StandardInformationKeyword.objects.all().order_by('id')
-    if limit is not None:
-        keyword_qs = keyword_qs[:limit]
 
     try:
+        siu_cache = _build_siu_cache()
+
+        keyword_qs = StandardInformationKeyword.objects.all().order_by('id')
+        if limit is not None:
+            keyword_qs = keyword_qs[:limit]
+
         for idx, row in enumerate(keyword_qs):
             query = row.keyword
             print(query)
