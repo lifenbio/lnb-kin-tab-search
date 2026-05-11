@@ -35,6 +35,8 @@ app.conf.beat_schedule = {
     },
     "naver-in-daily-collection-create-excel": {
         "task": "common.tasks.naver_in_daily_collection_create_excel",
-        "schedule": crontab(minute=00, hour='14', day_of_week='mon-sun')
+        # 14시 → 19시 변경: 0시 cron 이 ~18시30~42분에 끝나는 패턴이라 14시 발사 시 부분 데이터.
+        # 19시면 마진 충분, 운영 4명에게 완전 데이터 메일 1통.
+        "schedule": crontab(minute=00, hour='19', day_of_week='mon-sun')
     }
 }
